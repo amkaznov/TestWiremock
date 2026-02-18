@@ -1,16 +1,15 @@
 FROM wiremock/wiremock:latest
 
-# Копируем всё содержимое текущей директории в рабочую директорию Wiremock
-# Если папка __files пустая и не попала в Git, эта команда просто 
-# скопирует то, что есть (например, mappings), не вызывая ошибку.
+# Переключаемся на root, чтобы точно иметь права на создание папок
+USER root
+
+# Копируем всё содержимое проекта
 COPY . /home/wiremock/
 
-# На всякий случай убедимся, что структура папок существует
-USER root
-RUN mkdir -p /home/wiremock/mappings /home/wiremock/__files && \
-    chown -R wiremock:wiremock /home/wiremock
+# Просто создаем папки. Если они уже есть (скопировались), -p не выдаст ошибку.
+# Если их нет (не были в Git), они создадутся.
+RUN mkdir -p /home/wiremock/mappings /home/wiremock/__files
 
-USER wiremock
-
-# Expose the default Wiremock port
+# Возвращаемся к стандартному поведению образа (обычно это запуск wiremock)
+# Не указываем конкретного пользователя, чтобы не гадать с именем
 EXPOSE 8080
